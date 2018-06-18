@@ -220,6 +220,8 @@ private:
     int mBirdPositionX;                     // 鳥の左上X座標
     int mBirdPositionY;                     // 鳥の左上Y座標
     int mBirdPositionMaxY;                  // 鳥の左上Y座標の最大値
+    int mBirdAnimationCounter;              // 鳥のアニメーションカウンタ
+    int mBirdAnimationCounterThreshold;     // 鳥のアニメーションの切り替えの閾値
 
     int mGamePlayThresholdPositionY;        // プレイ画面へ遷移するために必要な鳥の左上Y座標の閾値
     int mPipeGenerateCounter;               // 土管の出現カウンタ
@@ -283,6 +285,8 @@ CGame::CGame() :
     mBirdPositionX(0),
     mBirdPositionY(0),
     mBirdPositionMaxY(0),
+    mBirdAnimationCounter(0),
+    mBirdAnimationCounterThreshold(0),
     mGamePlayThresholdPositionY(0),
     mPipeGenerateCounter(0),
     mPipeGenerateCounterThreshold(0),
@@ -434,12 +438,21 @@ void CGame::InitializeParameters()
 
     // リスタートするために必要なセンサの入力値の閾値の設定
     this->mRestartThresholdPositionY = 500.0;
+
+    // 鳥のアニメーションの切り替えの閾値の設定
+    this->mBirdAnimationCounterThreshold = 62;
 }
 
 void CGame::Update()
 {
     // 地面の移動
     this->mImageGroundOffset = (this->mImageGroundOffset + 4) % this->mImageGroundWidth;
+
+    // 鳥のアニメーションカウンタの更新
+    this->mBirdAnimationCounter++;
+
+    if (this->mBirdAnimationCounter > this->mBirdAnimationCounterThreshold)
+        this->mBirdAnimationCounter = 0;
 
     switch (this->mGameState) {
         case GameState::Start:
@@ -596,7 +609,7 @@ void CGame::Draw()
             DxLib::DrawGraph(
                 this->mBirdPositionX,
                 this->mBirdPositionY,
-                this->mImageHandleBird[0], TRUE);
+                this->mImageHandleBird[this->mBirdAnimationCounter / 21], TRUE);
             break;
         }
 
@@ -622,7 +635,7 @@ void CGame::Draw()
             DxLib::DrawGraph(
                 this->mBirdPositionX,
                 this->mBirdPositionY,
-                this->mImageHandleBird[0], TRUE);
+                this->mImageHandleBird[this->mBirdAnimationCounter / 21], TRUE);
 
             // スコアの描画
             std::string scoreText = std::to_string(this->mScore);
@@ -647,7 +660,7 @@ void CGame::Draw()
                 this->mBirdPositionX - this->mBirdWidth / 2,
                 this->mBirdPositionY + this->mBirdHeight / 2,
                 1.0, ConvertDegreeToRadian<double>(90.0),
-                this->mImageHandleBird[0], TRUE, FALSE, FALSE);
+                this->mImageHandleBird[this->mBirdAnimationCounter / 21], TRUE, FALSE, FALSE);
 
             // スコアの表示画像の描画
             DxLib::DrawGraph(
